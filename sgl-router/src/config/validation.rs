@@ -39,7 +39,7 @@ impl ConfigValidator {
     }
 
     /// Validate routing mode configuration
-    fn validate_mode(mode: &RoutingMode, has_service_discovery: bool) -> ConfigResult<()> {
+    fn validate_mode(mode: &RoutingMode, _has_service_discovery: bool) -> ConfigResult<()> {
         match mode {
             RoutingMode::Regular { worker_urls } => {
                 // Validate URLs if any are provided
@@ -56,20 +56,6 @@ impl ConfigValidator {
                 prefill_policy,
                 decode_policy,
             } => {
-                // Only require URLs if service discovery is disabled
-                if !has_service_discovery {
-                    if prefill_urls.is_empty() {
-                        return Err(ConfigError::ValidationFailed {
-                            reason: "PD mode requires at least one prefill worker URL".to_string(),
-                        });
-                    }
-                    if decode_urls.is_empty() {
-                        return Err(ConfigError::ValidationFailed {
-                            reason: "PD mode requires at least one decode worker URL".to_string(),
-                        });
-                    }
-                }
-
                 // Validate URLs if any are provided
                 if !prefill_urls.is_empty() {
                     let prefill_url_strings: Vec<String> =
