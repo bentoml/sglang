@@ -313,18 +313,16 @@ impl RouterTrait for RouterManager {
             .into_response()
     }
 
-    async fn get_models(&self, _req: Request<Body>) -> Response {
-        let models = self.worker_registry.get_models();
+    async fn get_models(&self, req: Request<Body>) -> Response {
+        // PATCHED: We use the same model for all workers, so just pick one router to get models from
+        let router = self.select_router_for_request(Some(req.headers()), None);
 
-        if models.is_empty() {
-            (StatusCode::SERVICE_UNAVAILABLE, "No models available").into_response()
+        if let Some(router) = router {
+            router.get_models(req).await
         } else {
             (
-                StatusCode::OK,
-                serde_json::json!({
-                    "models": models
-                })
-                .to_string(),
+                StatusCode::NOT_FOUND,
+                "No router available for this request",
             )
                 .into_response()
         }
